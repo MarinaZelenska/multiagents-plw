@@ -1,0 +1,242 @@
+<div id="qauto-student-simulator" class="qs-root">
+  <style>
+    #qauto-student-simulator { color: var(--foreground); max-width: 900px; margin: 0 auto; }
+    #qauto-student-simulator * { box-sizing: border-box; }
+    #qauto-student-simulator h2, #qauto-student-simulator h3, #qauto-student-simulator p { margin-top: 0; }
+    #qauto-student-simulator h2, #qauto-student-simulator h3 { font-weight: 500; }
+    #qauto-student-simulator .qs-heading { margin-bottom: 16px; }
+    #qauto-student-simulator .qs-heading h2 { margin-bottom: 5px; }
+    #qauto-student-simulator .qs-heading p { margin-bottom: 0; color: var(--muted-foreground); }
+    #qauto-student-simulator .qs-map { list-style: none; display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); gap: 12px; padding: 0; margin: 0; }
+    #qauto-student-simulator .qs-node { position: relative; min-width: 0; padding: 10px 8px; border: 1px solid var(--border); border-radius: 10px; background: var(--card); opacity: .68; }
+    #qauto-student-simulator .qs-node:not(:last-child)::after { content: "→"; position: absolute; right: -13px; top: 50%; transform: translateY(-50%); color: var(--muted-foreground); }
+    #qauto-student-simulator .qs-node.is-visited { opacity: 1; border-color: var(--primary); }
+    #qauto-student-simulator .qs-node.is-current { opacity: 1; background: var(--accent); outline: 2px solid var(--primary); outline-offset: 1px; }
+    #qauto-student-simulator .qs-node-number { display: block; color: var(--muted-foreground); margin-bottom: 3px; }
+    #qauto-student-simulator .qs-node-name { display: block; font-weight: 500; overflow-wrap: anywhere; }
+    #qauto-student-simulator .qs-branches { display: flex; flex-wrap: wrap; gap: 7px; align-items: center; margin: 12px 0 0; }
+    #qauto-student-simulator .qs-branches-label { color: var(--muted-foreground); margin-right: 2px; }
+    #qauto-student-simulator .qs-branch { display: inline-flex; align-items: center; min-height: 31px; padding: 4px 9px; border: 1px solid var(--border); border-radius: 999px; color: var(--muted-foreground); }
+    #qauto-student-simulator .qs-branch.is-taken { color: var(--foreground); border-color: var(--orange); background: var(--accent); }
+    #qauto-student-simulator .qs-branch[data-branch="blocked"].is-taken,
+    #qauto-student-simulator .qs-branch[data-branch="notfound"].is-taken { border-color: var(--red); }
+    #qauto-student-simulator .qs-workspace { display: grid; grid-template-columns: minmax(0, 1.55fr) minmax(220px, .9fr); gap: 14px; margin-top: 19px; }
+    #qauto-student-simulator .qs-current { padding: 18px; border: 1px solid var(--border); border-radius: 14px; background: var(--card); }
+    #qauto-student-simulator .qs-eyebrow { color: var(--muted-foreground); margin-bottom: 6px; }
+    #qauto-student-simulator .qs-current h3 { margin-bottom: 8px; }
+    #qauto-student-simulator .qs-description { min-height: 66px; margin-bottom: 14px; }
+    #qauto-student-simulator .qs-actions { display: flex; flex-wrap: wrap; gap: 8px; }
+    #qauto-student-simulator .qs-actions .btn { white-space: normal; text-align: center; }
+    #qauto-student-simulator .qs-back { margin-top: 10px; }
+    #qauto-student-simulator .qs-snapshot { display: grid; gap: 8px; align-content: start; }
+    #qauto-student-simulator .qs-metric { padding: 11px 13px; border: 1px solid var(--border); border-radius: 10px; background: var(--card); }
+    #qauto-student-simulator .qs-metric-label { display: block; color: var(--muted-foreground); margin-bottom: 4px; }
+    #qauto-student-simulator .qs-metric-value { display: block; font-weight: 500; overflow-wrap: anywhere; }
+    #qauto-student-simulator .qs-explain { margin: 17px 0 0; color: var(--muted-foreground); }
+    #qauto-student-simulator .qs-folders { margin-top: 22px; }
+    #qauto-student-simulator .qs-folders h3 { margin-bottom: 10px; }
+    #qauto-student-simulator .qs-folder-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 9px; }
+    #qauto-student-simulator .qs-folder { border: 1px solid var(--border); border-radius: 10px; background: var(--card); }
+    #qauto-student-simulator .qs-folder.is-related { border-color: var(--primary); }
+    #qauto-student-simulator .qs-folder summary { cursor: pointer; padding: 11px 12px; }
+    #qauto-student-simulator .qs-folder summary code { font-weight: 500; color: var(--foreground); }
+    #qauto-student-simulator .qs-folder summary span { display: block; margin-top: 3px; color: var(--muted-foreground); }
+    #qauto-student-simulator .qs-folder p { margin: 0; padding: 0 12px 12px; }
+    @media (max-width: 700px) {
+      #qauto-student-simulator .qs-map { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+      #qauto-student-simulator .qs-node:nth-child(3)::after { display: none; }
+      #qauto-student-simulator .qs-workspace { grid-template-columns: minmax(0, 1fr); }
+      #qauto-student-simulator .qs-snapshot { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+    }
+    @media (max-width: 520px) {
+      #qauto-student-simulator .qs-snapshot { grid-template-columns: minmax(0, 1fr); }
+      #qauto-student-simulator .qs-folder-grid { grid-template-columns: minmax(0, 1fr); }
+      #qauto-student-simulator .qs-description { min-height: 0; }
+    }
+  </style>
+
+  <div class="qs-heading">
+    <h2>Пройдіть шлях QAuto-кейса</h2>
+    <p>Навчальна симуляція: обирайте рішення. Вона не запускає тести й не змінює Notion.</p>
+  </div>
+
+  <ol class="qs-map" aria-label="Етапи процесу">
+    <li class="qs-node is-current" data-step="1"><span class="qs-node-number">01</span><span class="qs-node-name">Кейс у Notion</span></li>
+    <li class="qs-node" data-step="2"><span class="qs-node-number">02</span><span class="qs-node-name">Analyzer</span></li>
+    <li class="qs-node" data-step="3"><span class="qs-node-number">03</span><span class="qs-node-name">Погодження</span></li>
+    <li class="qs-node" data-step="4"><span class="qs-node-number">04</span><span class="qs-node-name">Implementer</span></li>
+    <li class="qs-node" data-step="5"><span class="qs-node-number">05</span><span class="qs-node-name">Reviewer</span></li>
+    <li class="qs-node" data-step="6"><span class="qs-node-number">06</span><span class="qs-node-name">Notion-статус</span></li>
+  </ol>
+
+  <div class="qs-branches" aria-label="Можливі гілки">
+    <span class="qs-branches-label">Гілки:</span>
+    <span class="qs-branch" data-branch="notfound">CASE_NOT_FOUND</span>
+    <span class="qs-branch" data-branch="changes">CHANGES REQUESTED ↺</span>
+    <span class="qs-branch" data-branch="blocked">BLOCKED_AFTER_2_RUNS</span>
+  </div>
+
+  <div class="qs-workspace">
+    <section class="qs-current" aria-labelledby="qs-current-title" aria-live="polite">
+      <div class="qs-eyebrow" id="qs-phase">Етап 1 із 6</div>
+      <h3 id="qs-current-title">Кейс у Notion</h3>
+      <p class="qs-description" id="qs-description">Користувач називає сторінку й номер кейса. Analyzer шукає рівно один рядок у таблиці цієї сторінки.</p>
+      <div class="qs-actions" id="qs-actions" aria-label="Оберіть наступний крок"></div>
+      <button type="button" class="btn btn-ghost qs-back" id="qs-back" disabled>← Назад на крок</button>
+    </section>
+    <div class="qs-snapshot" aria-label="Стан навчальної симуляції">
+      <div class="qs-metric"><span class="qs-metric-label">Запуски Playwright Test</span><span class="qs-metric-value" id="qs-runs">0 / 2</span></div>
+      <div class="qs-metric"><span class="qs-metric-label">Артефакт</span><span class="qs-metric-value" id="qs-artifact">Повний case ID з Notion</span></div>
+      <div class="qs-metric"><span class="qs-metric-label">«Автоматизовано» в Notion</span><span class="qs-metric-value" id="qs-notion">Без змін</span></div>
+    </div>
+  </div>
+
+  <p class="qs-explain">Кожен запуск тесту має <code>--retries=0</code>. Невдалий запуск теж входить у ліміт 2/2. Статуси й результати вище умовні.</p>
+
+  <section class="qs-folders" aria-labelledby="qs-folders-title">
+    <h3 id="qs-folders-title">Папки проєкту — відкрийте для пояснення</h3>
+    <div class="qs-folder-grid">
+      <details class="qs-folder" data-folder="pages"><summary><code>pages/</code><span>Page Object: локатори та дії</span></summary><p>Кореневі <code>*.page.ts</code> зберігають перевірені локатори й дії користувача. Ключові очікування залишаються в тесті.</p></details>
+      <details class="qs-folder" data-folder="tests"><summary><code>tests/</code><span>Сценарії та assertions</span></summary><p>Кореневі <code>*.spec.ts</code> містять дані, кроки, <code>expect(...)</code> та повний case ID у назві тесту.</p></details>
+      <details class="qs-folder" data-folder="diffs"><summary><code>generated/diffs/</code><span>Версії patch і статусні зміни</span></summary><p>Тут зберігаються початковий diff, окремі виправні diff і diff для оновлення Notion. Попередні версії не перезаписують.</p></details>
+    </div>
+  </section>
+
+  <script>
+    (() => {
+      const root = document.getElementById('qauto-student-simulator');
+      const $ = selector => root.querySelector(selector);
+      const nodes = Array.from(root.querySelectorAll('[data-step]'));
+      const branchNodes = Array.from(root.querySelectorAll('[data-branch]'));
+      const folders = Array.from(root.querySelectorAll('[data-folder]'));
+      const states = {
+        start: {
+          step: 1, title: 'Кейс у Notion',
+          description: 'Користувач називає сторінку й номер кейса. Analyzer шукає рівно один рядок у таблиці цієї сторінки.',
+          artifact: 'Повний case ID з Notion', notion: 'Без змін', folders: [],
+          actions: [['Кейс знайдено', 'analyzer'], ['CASE_NOT_FOUND', 'notfound']]
+        },
+        notfound: {
+          step: 2, title: 'CASE_NOT_FOUND — стоп',
+          description: 'Точного кейса немає. Analyzer повідомляє перевірену сторінку й номер; CLI, diff і запис у Notion не виконуються.',
+          artifact: 'Немає diff або тесту', notion: 'Без змін', folders: [],
+          actions: [['Пройти інший маршрут', 'start']]
+        },
+        analyzer: {
+          step: 2, title: 'Analyzer готує доказовий diff',
+          description: 'Читає кейс і вимоги лише цієї сторінки, запускає preflight, перевіряє локатори через Playwright CLI та зберігає diff v1.',
+          artifact: 'CLI evidence + diff v1 + SHA-256', notion: 'Без змін', folders: ['diffs'],
+          actions: [['Diff v1 підготовлено', 'approval']]
+        },
+        approval: {
+          step: 3, title: 'Людина перевіряє diff',
+          description: 'APPROVE DIFF v1 погоджує точний файл, SHA-256, вимогу й перелік цільових файлів. Після погодження координатор ставить статус «В роботі».',
+          artifact: 'Погоджений diff v1', notion: 'Без змін до погодження', folders: ['diffs'],
+          actions: [['APPROVE DIFF v1', 'implementer1']]
+        },
+        implementer1: {
+          step: 4, title: 'Implementer застосовує diff',
+          description: 'Звіряє SHA-256 і вихідний стан, застосовує patch, перевіряє TypeScript та запускає окремий тест 1/2 з --retries=0.',
+          artifact: 'pages/*.page.ts + tests/*.spec.ts', notion: '☐ В роботі — <файл> :: <назва тесту>', folders: ['pages', 'tests', 'diffs'],
+          actions: [['Запуск 1/2 завершено', 'reviewer1']]
+        },
+        reviewer1: {
+          step: 5, title: 'Reviewer оцінює перший запуск',
+          description: 'Звіряє актуальний кейс, CLI evidence, diff, код і фактичний output. Оберіть його навчальний вердикт.',
+          artifact: 'Output запуску 1/2 + review', notion: '☐ В роботі — <файл> :: <назва тесту>', folders: ['pages', 'tests', 'diffs'],
+          actions: [['VALID', 'valid'], ['CHANGES REQUESTED', 'implementer2']]
+        },
+        implementer2: {
+          step: 4, title: 'Implementer виправляє зауваження',
+          description: 'Виправляє лише погоджені файли й вимогу, зберігає diff v2 та виконує другий, останній запуск без retries. Нове погодження не потрібне.',
+          artifact: 'Виправний diff v2 + SHA-256', notion: '☐ Потребує виправлення — <файл> :: <назва тесту>', folders: ['pages', 'tests', 'diffs'],
+          actions: [['Запуск 2/2 завершено', 'reviewer2']]
+        },
+        reviewer2: {
+          step: 5, title: 'Reviewer оцінює другий запуск',
+          description: 'Звіряє виправний diff і output запуску 2/2. Без VALID цикл закінчується; третього запуску в цьому завданні немає.',
+          artifact: 'Output запусків 1/2 і 2/2', notion: '☐ Потребує виправлення — <файл> :: <назва тесту>', folders: ['pages', 'tests', 'diffs'],
+          actions: [['VALID', 'valid'], ['VALID немає', 'blocked']]
+        },
+        valid: {
+          step: 6, title: 'VALID → оновлення Notion',
+          description: 'Координатор записує ☑ лише після фактичного успішного запуску поточного коду й перевіряє комірку повторним читанням.',
+          artifact: 'Статусний diff у generated/diffs/', notion: '☑ <файл> :: <назва тесту>', folders: ['diffs'],
+          actions: [['Пройти інший маршрут', 'start']]
+        },
+        blocked: {
+          step: 6, title: 'BLOCKED_AFTER_2_RUNS → стоп',
+          description: 'Координатор записує статус з ☐, повідомляє дві команди, exit codes, підсумки й причину. Новий запуск можливий лише як нове завдання.',
+          artifact: 'Два результати + статусний diff', notion: '☐ BLOCKED_AFTER_2_RUNS — <файл> :: <назва тесту>', folders: ['diffs'],
+          actions: [['Пройти інший маршрут', 'start']]
+        }
+      };
+      let current = 'start';
+      let runs = 0;
+      let visited = new Set([1]);
+      let branches = new Set();
+      let snapshots = [];
+
+      function render() {
+        const state = states[current];
+        $('#qs-phase').textContent = `Етап ${state.step} із 6`;
+        $('#qs-current-title').textContent = state.title;
+        $('#qs-description').textContent = state.description;
+        $('#qs-runs').textContent = `${runs} / 2`;
+        $('#qs-artifact').textContent = state.artifact;
+        $('#qs-notion').textContent = state.notion;
+        nodes.forEach(node => {
+          const number = Number(node.dataset.step);
+          node.classList.toggle('is-current', number === state.step);
+          node.classList.toggle('is-visited', visited.has(number) && number !== state.step);
+        });
+        branchNodes.forEach(node => node.classList.toggle('is-taken', branches.has(node.dataset.branch)));
+        folders.forEach(folder => folder.classList.toggle('is-related', state.folders.includes(folder.dataset.folder)));
+        const actions = $('#qs-actions');
+        actions.replaceChildren();
+        $('#qs-back').disabled = snapshots.length === 0;
+        state.actions.forEach(([label, next], index) => {
+          const button = document.createElement('button');
+          button.type = 'button';
+          button.className = index === 0 ? 'btn btn-primary' : 'btn';
+          button.textContent = label;
+          button.addEventListener('click', () => advance(next));
+          actions.appendChild(button);
+        });
+      }
+
+      function advance(next) {
+        if (next === 'start') {
+          runs = 0;
+          visited = new Set([1]);
+          branches = new Set();
+          snapshots = [];
+        } else {
+          snapshots.push({ current, runs, visited: new Set(visited), branches: new Set(branches) });
+          if (next === 'reviewer1') runs = 1;
+          if (next === 'reviewer2') runs = 2;
+          if (next === 'notfound') branches.add('notfound');
+          if (next === 'implementer2') branches.add('changes');
+          if (next === 'blocked') branches.add('blocked');
+          visited.add(states[next].step);
+        }
+        current = next;
+        render();
+        $('#qs-actions button')?.focus();
+      }
+
+      $('#qs-back').addEventListener('click', () => {
+        const previous = snapshots.pop();
+        if (!previous) return;
+        current = previous.current;
+        runs = previous.runs;
+        visited = previous.visited;
+        branches = previous.branches;
+        render();
+        $('#qs-back').focus();
+      });
+
+      render();
+    })();
+  </script>
+</div>

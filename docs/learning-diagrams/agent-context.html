@@ -1,0 +1,237 @@
+<!doctype html>
+<html lang="uk">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Контекст агентів · QAuto</title>
+  <style>
+    :root { color-scheme: dark; --bg:#0b1020; --surface:#141d33; --surface2:#1a2742; --line:#34445f; --text:#f2f5fb; --muted:#abbad0; --mint:#5de3c5; --blue:#86b7ff; --amber:#ffc777; --rose:#ff9aa8; }
+    * { box-sizing:border-box; }
+    html { scroll-behavior:smooth; }
+    body { margin:0; min-height:100vh; background:radial-gradient(circle at 85% 0%, #193456 0, transparent 32%),radial-gradient(circle at 4% 85%, #173143 0, transparent 28%),var(--bg); color:var(--text); font:16px/1.5 system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif; }
+    button { font:inherit; }
+    .wrap { max-width:1190px; margin:auto; padding:40px 24px 64px; }
+    .topline { color:var(--mint); font-weight:750; letter-spacing:.16em; text-transform:uppercase; font-size:.73rem; }
+    h1 { margin:10px 0 12px; max-width:790px; font-size:clamp(2.1rem,5vw,4.1rem); line-height:1.08; letter-spacing:-.045em; }
+    .lead { color:var(--muted); max-width:780px; font-size:1.12rem; margin:0 0 30px; }
+    .hero-note { display:inline-flex; gap:9px; align-items:center; padding:8px 12px; border:1px solid var(--line); border-radius:999px; color:var(--muted); font-size:.83rem; margin-bottom:22px; }
+    .hero-note strong { color:var(--mint); }
+    .flow { display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:12px; margin:0 0 27px; }
+    .flow button { position:relative; text-align:left; width:100%; min-height:100px; border:1px solid var(--line); border-radius:16px; padding:15px 16px; background:rgba(20,29,51,.8); color:var(--text); cursor:pointer; transition:transform .18s,border-color .18s,background .18s; }
+    .flow button:not(:last-child)::after { content:"→"; position:absolute; right:-16px; top:37%; z-index:2; color:var(--mint); font-size:1.4rem; }
+    .flow button:hover { transform:translateY(-3px); border-color:var(--blue); }
+    .flow button[aria-pressed="true"] { background:#213453; border-color:var(--mint); box-shadow:0 0 0 2px rgba(93,227,197,.1) inset; }
+    .flow .step { display:block; color:var(--mint); font-size:.76rem; font-weight:750; letter-spacing:.08em; }
+    .flow .name { display:block; margin-top:5px; font-weight:750; font-size:1.08rem; }
+    .flow .brief { display:block; margin-top:3px; color:var(--muted); font-size:.82rem; }
+    .controlbar { display:flex; flex-wrap:wrap; gap:14px 28px; align-items:end; margin:0 0 18px; }
+    .controlbar fieldset { border:0; padding:0; margin:0; min-width:0; }
+    .controlbar legend { color:var(--muted); font-size:.76rem; font-weight:750; margin-bottom:7px; text-transform:uppercase; letter-spacing:.08em; }
+    .seg { display:flex; flex-wrap:wrap; gap:5px; padding:4px; background:#111b30; border:1px solid var(--line); border-radius:12px; }
+    .seg button { border:0; border-radius:9px; background:transparent; color:var(--muted); padding:8px 13px; cursor:pointer; font-size:.9rem; }
+    .seg button:hover { color:var(--text); background:#1c2a45; }
+    .seg button[aria-pressed="true"] { color:#071522; background:var(--mint); font-weight:750; }
+    .canvas { display:grid; grid-template-columns:1.18fr .92fr .92fr; gap:12px; align-items:stretch; }
+    .zone { border:1px solid var(--line); border-radius:18px; background:rgba(20,29,51,.9); padding:18px; min-height:340px; }
+    .zone.in { border-color:#32766e; background:linear-gradient(155deg,rgba(25,64,65,.96),rgba(20,29,51,.95) 58%); }
+    .zone-head { display:flex; align-items:center; gap:9px; margin-bottom:3px; }
+    .zone-icon { width:27px; height:27px; display:grid; place-items:center; border-radius:9px; font-size:1rem; background:#2c4650; color:var(--mint); flex:0 0 auto; }
+    .zone.access .zone-icon { background:#273c5e; color:var(--blue); }
+    .zone.out .zone-icon { background:#4a3445; color:var(--rose); }
+    .zone h2 { margin:0; font-size:1.04rem; }
+    .zone p { margin:0 0 16px 36px; color:var(--muted); font-size:.83rem; }
+    .items { display:flex; flex-direction:column; gap:8px; }
+    .item { display:flex; align-items:center; gap:9px; width:100%; text-align:left; border:1px solid #41605f; background:#1b383d; color:var(--text); border-radius:10px; padding:10px 11px; cursor:pointer; line-height:1.3; }
+    .item:hover,.item[aria-pressed="true"] { border-color:var(--mint); background:#285250; }
+    .access .item { border-color:#39557a; background:#1d304d; }
+    .access .item:hover,.access .item[aria-pressed="true"] { border-color:var(--blue); background:#29466b; }
+    .out .item { border-color:#5a4052; background:#322438; }
+    .out .item:hover,.out .item[aria-pressed="true"] { border-color:var(--rose); background:#4d2e42; }
+    .item .dot { width:7px; height:7px; border-radius:50%; background:var(--mint); flex:0 0 auto; }
+    .access .item .dot { background:var(--blue); }
+    .out .item .dot { background:var(--rose); }
+    .detail { margin-top:13px; padding:18px 20px; border-radius:16px; background:#1b2841; border:1px solid var(--line); display:grid; grid-template-columns:180px 1fr; gap:16px; }
+    .detail-label { color:var(--mint); font-size:.74rem; font-weight:750; letter-spacing:.1em; text-transform:uppercase; }
+    .detail h3 { margin:4px 0 0; font-size:1.02rem; }
+    .detail p { margin:0; color:#d8e4f1; }
+    .handoff { display:flex; align-items:center; gap:12px; margin:22px 0 0; color:var(--muted); }
+    .handoff .wire { height:1px; flex:1; background:linear-gradient(90deg,transparent,var(--mint),transparent); }
+    .handoff strong { color:var(--text); font-size:.88rem; }
+    .comparison { display:grid; grid-template-columns:1fr 1fr; gap:14px; margin-top:13px; }
+    .compare { padding:20px; border:1px solid var(--line); border-radius:16px; background:rgba(20,29,51,.82); }
+    .compare h2 { margin:0 0 9px; font-size:1.08rem; }
+    .compare p { margin:0; color:var(--muted); }
+    .compare b { color:var(--text); }
+    .compare.good { border-color:#32766e; }
+    .smallprint { margin-top:20px; color:var(--muted); font-size:.82rem; }
+    .smallprint a { color:#add1ff; }
+    .smallprint a:hover { color:#e2f0ff; }
+    code { color:#c9e1ff; font-size:.93em; }
+    :focus-visible { outline:3px solid var(--amber); outline-offset:3px; }
+    @media (max-width:820px) { .flow { grid-template-columns:repeat(2,1fr); } .flow button:nth-child(2)::after { display:none; } .canvas { grid-template-columns:1fr 1fr; } .zone.in { grid-column:1/-1; min-height:0; } .zone { min-height:280px; } }
+    @media (max-width:580px) { .wrap { padding:28px 16px 45px; } .flow { gap:9px; } .flow button { min-height:105px; } .canvas,.comparison,.detail { grid-template-columns:1fr; } .zone.in { grid-column:auto; } .zone { min-height:0; } .detail { gap:5px; } .flow button::after { display:none; } }
+    @media (prefers-reduced-motion:reduce) { html { scroll-behavior:auto; } .flow button { transition:none; } }
+  </style>
+</head>
+<body>
+<main class="wrap" id="context-simulator">
+  <div class="topline">QAuto · навчальна схема</div>
+  <h1>Що насправді бачить кожен агент?</h1>
+  <p class="lead">Натисніть роль і змініть момент роботи. Предмети переходять у контекст лише після передавання або читання інструментом.</p>
+  <div class="hero-note"><strong>Головна ідея</strong> Спільний доступ до проєкту ≠ спільне контекстне вікно</div>
+
+  <nav class="flow" aria-label="Оберіть агента">
+    <button type="button" data-agent="coordinator" aria-pressed="false"><span class="step">00 · КЕРУЄ</span><span class="name">Координатор</span><span class="brief">завдання й handoff</span></button>
+    <button type="button" data-agent="analyzer" aria-pressed="true"><span class="step">01 · ДОСЛІДЖУЄ</span><span class="name">Analyzer</span><span class="brief">кейс, UI, diff</span></button>
+    <button type="button" data-agent="implementer" aria-pressed="false"><span class="step">02 · РЕАЛІЗУЄ</span><span class="name">Implementer</span><span class="brief">patch і запуск</span></button>
+    <button type="button" data-agent="reviewer" aria-pressed="false"><span class="step">03 · ПЕРЕВІРЯЄ</span><span class="name">Reviewer</span><span class="brief">незалежний вердикт</span></button>
+  </nav>
+
+  <div class="controlbar">
+    <fieldset>
+      <legend>Момент</legend>
+      <div class="seg" aria-label="Момент роботи агента">
+        <button type="button" data-moment="start" aria-pressed="true">При запуску</button>
+        <button type="button" data-moment="after" aria-pressed="false">Після інструментів</button>
+      </div>
+    </fieldset>
+    <fieldset>
+      <legend>Передавання історії</legend>
+      <div class="seg" aria-label="Спосіб передавання контексту">
+        <button type="button" data-history="scoped" aria-pressed="true">Цільове завдання + handoff</button>
+        <button type="button" data-history="full" aria-pressed="false">Уся історія координатора</button>
+      </div>
+    </fieldset>
+  </div>
+
+  <section class="canvas" aria-label="Склад контексту вибраного агента" aria-live="polite">
+    <div class="zone in"><div class="zone-head"><span class="zone-icon" aria-hidden="true">●</span><h2>У контекстному вікні</h2></div><p>Текст, який агент уже отримав або прочитав.</p><div class="items" id="items-in"></div></div>
+    <div class="zone access"><div class="zone-head"><span class="zone-icon" aria-hidden="true">↗</span><h2>Доступне за дією</h2></div><p>Може відкрити інструментом; ще не прочитано.</p><div class="items" id="items-access"></div></div>
+    <div class="zone out"><div class="zone-head"><span class="zone-icon" aria-hidden="true">×</span><h2>Поза вікном</h2></div><p>Не передано, ще не створено або заборонено.</p><div class="items" id="items-out"></div></div>
+  </section>
+
+  <section class="detail" aria-live="polite" aria-label="Пояснення вибраного елемента">
+    <div><div class="detail-label" id="detail-kind">Натисніть елемент</div><h3 id="detail-title">Контекст формується діями</h3></div>
+    <p id="detail-text">Зверніть увагу: файли, інструменти й Notion можуть бути доступними агенту, але їхній вміст з’являється у вікні лише після читання або явного передавання.</p>
+  </section>
+
+  <div class="handoff"><span class="wire"></span><strong>Handoff передає факти, посилання, diff, SHA-256 і evidence між етапами</strong><span class="wire"></span></div>
+  <section class="comparison" aria-label="Навіщо розділяти ролі">
+    <div class="compare"><h2>Один агент для всього</h2><p>У ході довгої роботи в одному вікні накопичуються пошук, код, запуски й рев’ю. Попередній шум лишається частиною його робочої історії.</p></div>
+    <div class="compare good"><h2>Окремі вікна + handoff</h2><p><b>Кожна роль отримує потрібне для свого рішення.</b> Reviewer може перевіряти результат окремо від процесу написання коду. Це вимагає якісного handoff і може збільшити загальну витрату токенів.</p></div>
+  </section>
+
+  <p class="smallprint">Це модель QAuto-процесу, а не вимір фактичних токенів. Обсяг успадкованої розмови залежить від параметра запуску агента. Секрети з локального config не показують у handoff або evidence. Джерела: <a href="../../templates/agent-handoff.md">шаблон handoff</a>, <a href="../../AGENTS.md">правила QAuto</a>, <a href="https://developers.openai.com/api/docs/guides/responses-multi-agent" target="_blank" rel="noopener noreferrer">офіційна документація OpenAI про multi-agent</a>.</p>
+</main>
+<script>
+(() => {
+  const root = document.getElementById('context-simulator');
+  const state = { agent:'analyzer', moment:'start', history:'scoped' };
+  const I = (label, detail) => ({ label, detail });
+  const shared = {
+    role: I('Рольові інструкції агента', 'Налаштування .codex/agents/*.toml задає обов’язки та межі конкретної ролі.'),
+    rules: I('Правила AGENTS.md і потрібні скіли', 'Проєктні правила та прочитані інструкції скілів спрямовують дії. Сам перелік доступних файлів не дорівнює їхньому вмісту в контексті.'),
+    history: I('Історія координатора', 'Якщо під час створення агента передати історію, вона займає місце в його окремому контекстному вікні. Обсяг залежить від параметра запуску.'),
+    files: I('Увесь репозиторій', 'Спільна робоча папка доступна через інструменти. Код усіх файлів не завантажується у вікно сам собою.'),
+    secrets: I('Вміст локального config і секрети', 'Правила проєкту забороняють виводити облікові дані, cookies і tokens у чат або test evidence. Інструмент може використати config без його копіювання у handoff.'),
+    otherNotion: I('Інші сторінки Notion', 'QAuto обмежує уточнення вимог вказаною сторінкою; повна база Notion не передається ролі автоматично.'),
+    reasoning: I('Внутрішній хід роботи іншої ролі', 'До наступної ролі надходить підсумок і потрібне evidence через handoff, а не вся попередня внутрішня історія, якщо її окремо не передали.')
+  };
+  const data = {
+    coordinator: {
+      start: {
+        in: [I('Запит користувача: сторінка + номер кейса', 'Координатор має точний вхід для пошуку кейса.'), I('Правила процесу й ліміт запусків', 'AGENTS.md і qauto-test-workflow визначають погодження diff, рев’ю та максимум два запуски Playwright Test.')],
+        access: [I('Шаблон handoff', 'Координатор відкриває templates/agent-handoff.md і заповнює пакет передавання.'), I('Проєктні файли та Notion через плагін', 'Доступ потребує окремої дії інструментом; вміст не з’являється в контексті сам.')],
+        out: [I('Майбутній результат Analyzer', 'Поки Analyzer не повернув evidence, координатор його не бачить.'), shared.secrets]
+      },
+      after: {
+        in: [I('Пакет handoff з case ID та джерелами', 'Координатор зберігає точний кейс, дозволені файли та джерела очікувань для наступних ролей.'), I('Відповіді агентів і вердикт Reviewer', 'Координатор отримує конкретні повідомлення ролей, команди, exit codes та висновок; самостійні контексти ролей не зливаються.'), I('Статус синхронізації Notion', 'Після перевірки координатор записує і повторно читає лише комірку «Автоматизовано».')],
+        access: [I('Diff-файли та поточний код', 'Координатор може відкрити потрібні артефакти за шляхами з handoff.')],
+        out: [shared.reasoning, shared.secrets]
+      }
+    },
+    analyzer: {
+      start: {
+        in: [shared.role, I('Назва сторінки й номер кейса', 'Координатор передає точне завдання для пошуку одного кейса.'), shared.rules],
+        access: [I('Кейс Notion через плагін', 'Analyzer сам читає вказану сторінку і потрібний рядок; до виклику його вмісту ще немає у вікні.'), I('pages/, tests/ і UI через Playwright CLI', 'Файли та snapshot з’являться в контексті після відповідного читання або CLI-команди.'), I('docs/test-standards.md', 'Стандарти треба відкрити для підготовки тестового diff.')],
+        out: [I('Результат майбутнього запуску тесту', 'Тест запускає Implementer після погодження, отже цього output ще немає.'), shared.otherNotion, shared.secrets]
+      },
+      after: {
+        in: [I('Точний кейс і джерела очікувань', 'Отримано через дозволений плагін Notion; тільки вибраний кейс і потрібні уточнення.'), I('CLI snapshot і перевірені локатори', 'Результат Playwright CLI потрапляє в контекст як evidence для локаторів.'), I('Підготовлений diff v1 + SHA-256', 'Analyzer зберігає unified diff у generated/diffs/ та передає його для APPROVE DIFF.')],
+        access: [I('Інші файли репозиторію', 'Analyzer може адресно відкрити потрібні файли, але решта коду не читається автоматично.')],
+        out: [I('Майбутній test output і вердикт', 'Їх створять наступні етапи.'), shared.otherNotion, shared.secrets]
+      }
+    },
+    implementer: {
+      start: {
+        in: [shared.role, I('APPROVE DIFF vN і межі файлів', 'Координатор передає погоджену версію, шлях, SHA-256 і дозволений перелік файлів.'), I('Handoff: case ID, сценарій, CLI evidence', 'Передані факти тримають реалізацію прив’язаною до одного кейса.'), shared.rules],
+        access: [I('Diff у generated/diffs/', 'Implementer читає файл і звіряє SHA-256 перед застосуванням.'), I('pages/ і tests/', 'Поточний код читається інструментом перед patch.')],
+        out: [shared.reasoning, shared.otherNotion, shared.secrets]
+      },
+      after: {
+        in: [I('Прочитаний diff і змінений код', 'Після читання й застосування ці тексти та результати інструментів входять у робочий контекст.'), I('TypeScript і запуск 1/2: команда, exit code, output', 'Фактичний результат передається Reviewer. Failure теж витрачає одну з двох спроб.'), I('Зауваження Reviewer, якщо надійшли', 'Лише конкретні findings із CHANGES REQUESTED повертаються для виправлення.')],
+        access: [I('Report і trace за потреби', 'Їх можна відкрити для діагностики failure.')],
+        out: [shared.reasoning, shared.secrets]
+      }
+    },
+    reviewer: {
+      start: {
+        in: [shared.role, I('Handoff: кейс, джерела й погоджені межі', 'Reviewer отримує критерії, посилання на case ID та перелік файлів.'), I('Команда, exit code і output Implementer', 'Координатор передає фактичний результат запуску, а не припущення про успіх.'), shared.rules],
+        access: [I('Notion: повторно прочитати той самий кейс', 'Reviewer перевіряє, чи вимога не змінилася.'), I('Diff, pages/, tests/ і CLI evidence', 'Reviewer сам читає артефакти для незалежного статичного рев’ю.')],
+        out: [shared.reasoning, shared.otherNotion, shared.secrets]
+      },
+      after: {
+        in: [I('Актуальний кейс і порівняний diff', 'Reviewer повторно прочитав кейс і звірив патч із кодом.'), I('Код, CLI evidence і фактичний output', 'Це доказова основа для VALID або конкретних CHANGES REQUESTED.'), I('Вердикт для координатора', 'Reviewer повертає висновок; лише координатор синхронізує колонку «Автоматизовано».')],
+        access: [I('Потрібний report/trace', 'За проблеми Reviewer може прочитати звіт чи trace для перевірки причини.')],
+        out: [shared.reasoning, shared.secrets]
+      }
+    }
+  };
+  const labels = { in:'У вікні', access:'Доступне за дією', out:'Поза вікном' };
+  const el = (id) => document.getElementById(id);
+  function render() {
+    root.querySelectorAll('[data-agent]').forEach(button => button.setAttribute('aria-pressed', String(button.dataset.agent === state.agent)));
+    root.querySelectorAll('[data-moment]').forEach(button => button.setAttribute('aria-pressed', String(button.dataset.moment === state.moment)));
+    root.querySelectorAll('[data-history]').forEach(button => button.setAttribute('aria-pressed', String(button.dataset.history === state.history)));
+    const current = data[state.agent][state.moment];
+    const zones = { in:[...current.in], access:[...current.access], out:[...current.out] };
+    if (state.agent !== 'coordinator') {
+      if (state.history === 'full') zones.in.unshift(shared.history);
+      else zones.out.push(I('Повна історія координатора', 'У цій навчальній конфігурації координатор передає цільове завдання й handoff. Інший режим запуску може передати більше історії.'));
+    }
+    for (const [kind, list] of Object.entries(zones)) {
+      const host = el(`items-${kind}`);
+      host.replaceChildren();
+      list.forEach(item => {
+        const button = document.createElement('button');
+        button.type = 'button';
+        button.className = 'item';
+        button.setAttribute('aria-pressed','false');
+        const dot = document.createElement('span');
+        dot.className = 'dot';
+        dot.setAttribute('aria-hidden','true');
+        const label = document.createElement('span');
+        label.textContent = item.label;
+        button.append(dot,label);
+        button.addEventListener('click', () => {
+          root.querySelectorAll('.item').forEach(other => other.setAttribute('aria-pressed','false'));
+          button.setAttribute('aria-pressed','true');
+          el('detail-kind').textContent = labels[kind];
+          el('detail-title').textContent = item.label;
+          el('detail-text').textContent = item.detail;
+        });
+        host.append(button);
+      });
+    }
+    el('detail-kind').textContent = 'Натисніть елемент';
+    el('detail-title').textContent = 'Контекст формується діями';
+    el('detail-text').textContent = 'Файли, інструменти й Notion можуть бути доступними агенту, але їхній вміст з’являється у вікні лише після читання або явного передавання.';
+  }
+  root.querySelectorAll('[data-agent]').forEach(button => button.addEventListener('click', () => { state.agent = button.dataset.agent; render(); }));
+  root.querySelectorAll('[data-moment]').forEach(button => button.addEventListener('click', () => { state.moment = button.dataset.moment; render(); }));
+  root.querySelectorAll('[data-history]').forEach(button => button.addEventListener('click', () => { state.history = button.dataset.history; render(); }));
+  render();
+})();
+</script>
+</body>
+</html>
