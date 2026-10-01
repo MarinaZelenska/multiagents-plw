@@ -1,0 +1,14 @@
+{
+  "scenarioId": "REV-02",
+  "verdict": "CHANGES REQUESTED",
+  "findings": [
+    {
+      "id": "LOCATOR_XPATH",
+      "file": "pages/home.page.ts",
+      "line": 8,
+      "problem": "Для кнопки використано XPath, хоча CLI evidence підтверджує семантичний локатор.",
+      "impact": "Вираз залежить від DOM і текстового вузла кнопки та може зламатися після зміни розмітки.",
+      "fix": "Замінити на page.getByRole('button', { name: 'Guest log in', exact: true }) з наявного evidence."
+    }
+  ]
+}

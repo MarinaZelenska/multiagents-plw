@@ -1,0 +1,7 @@
+{
+  "caseId": "DEMO-MP-001",
+  "source": "LOCAL-REQ-001: гостьовий вхід веде на /panel/garage і показує повідомлення Guest session.",
+  "locatorEvidence": { "expression": "page.getByRole('button', { name: 'Guest log in', exact: true })", "matches": 1, "element": "потрібна кнопка гостьового входу" },
+  "approvedFiles": ["pages/home.page.ts", "tests/main.spec.ts"],
+  "run": { "number": 1, "command": "npx playwright test tests/main.spec.ts --project=chromium --retries=0", "exitCode": 0, "output": "[SIMULATED] 1 passed" }
+}

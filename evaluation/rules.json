@@ -1,0 +1,15 @@
+{
+  "purpose": "Публічний словник ID для структурованої відповіді Reviewer; не вказує, які порушення є в конкретному сценарії.",
+  "rules": [
+    { "id": "LOCATOR_XPATH", "description": "XPath у коді тесту або Page Object." },
+    { "id": "LOCATOR_POSITIONAL", "description": "Позиційний вибір .first(), .last() або .nth() без вимоги й доказу." },
+    { "id": "LOCATOR_CSS_UNVERIFIED", "description": "CSS-селектор не підтверджено актуальним CLI evidence." },
+    { "id": "POM_CONSTRUCTOR_ACTION", "description": "Конструктор Page Object виконує дію замість побудови локаторів." },
+    { "id": "POM_HIDDEN_ASSERTION", "description": "Ключовий expected result перевіряється всередині Page Object." },
+    { "id": "POM_NAMING", "description": "Назва класу, поля або дії порушує правило найменування." },
+    { "id": "MISSING_ASSERTION", "description": "У spec бракує перевірки очікування з локальної вимоги." },
+    { "id": "FIXED_WAIT", "description": "Тест або модель використовує фіксовану затримку." },
+    { "id": "RUN_FAILED", "description": "Фактичний запуск невдалий, тому VALID не підтверджено." },
+    { "id": "RUN_RETRIES", "description": "Команда Playwright Test не містить --retries=0." }
+  ]
+}

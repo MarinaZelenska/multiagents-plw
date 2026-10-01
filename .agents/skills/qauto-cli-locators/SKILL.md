@@ -5,6 +5,8 @@ description: Допомогти Analyzer перевірити локатори Q
 
 # QAuto CLI locators
 
+Для Page Object і локаторів обов’язково прочитай [спільну інструкцію для агентів](../../../docs/page-object-locators.md) перед відповідним етапом роботи.
+
 Прочитай `AGENTS.md`, `docs/test-standards.md` і контракт знайденого Notion-кейса з handoff. Починай CLI лише після успішного пошуку кейса за назвою сторінки й номером. Перед відкриттям UI перевір `npx --no-install playwright cli --version` та `npm run preflight`. Якщо CLI або Chromium чи локальний config не готові, поверни `CLI SETUP BLOCKER` і кроки підготовки з README.
 
 У межах завдання Analyzer використовуй перший запуск `npx playwright cli open https://qauto.forstudy.space --config=.playwright/cli.config.json` (дозволено додати ім'я сесії `-s=...`). Далі отримай `snapshot`, виконай потрібні дії за refs, `generate-locator <ref>` для елементів тесту та перевір однозначність у відповідному стані. Закрий сесію.

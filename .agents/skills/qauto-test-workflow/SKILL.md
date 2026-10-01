@@ -5,6 +5,8 @@ description: Координувати автоматизацію QAuto кейс�
 
 # QAuto test workflow
 
+Для Page Object і локаторів обов’язково прочитай [спільну інструкцію для агентів](../../../docs/page-object-locators.md) перед відповідним етапом роботи.
+
 Прочитай `AGENTS.md`, `docs/test-standards.md`, `docs/notion-test-cases.md` і `templates/agent-handoff.md`. Вхід — назва сторінки й номер кейса. Веди один пакет передавання з повним case ID, URL/ID Notion-сторінки та джерелами. Делегуй Analyzer етап: `qauto-notion-cases` → точний кейс у `QAuto — База знань` → за потреби вимоги тільки цієї сторінки, пов'язані сутності/API → preflight → Playwright CLI → evidence → diff у `generated/diffs/`. За `CASE_NOT_FOUND` зупинись і повідом користувачу; не запускай інші ролі. За недоступності плагіна чи неповних даних поверни blocker, без окремого MCP або іншого каналу доступу.
 
 Покажи людині шлях, SHA-256 і вміст diff разом із case ID, джерелами, точними файлом і назвою тесту. Це єдина планова точка погодження; після `APPROVE DIFF vN` передай файл Implementer і синхронізуй у Notion `☐ В роботі — <файл> :: <назва тесту>` за `qauto-notion-cases`.

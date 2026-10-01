@@ -1,0 +1,22 @@
+{
+  "scenarioId": "REV-03",
+  "verdict": "VALID",
+  "findings": [
+    {
+      "id": "POM_CONSTRUCTOR_ACTION",
+      "file": "tests/main.spec.ts",
+      "line": 5,
+      "problem": "Є навігація в конструкторі.",
+      "impact": "Може змінювати сторінку без очікування.",
+      "fix": "Перенести навігацію в метод open()."
+    },
+    {
+      "id": "CLASS_NAME",
+      "file": "pages/home.page.ts",
+      "line": 3,
+      "problem": "Назва класу нібито не відповідає стандарту.",
+      "impact": "Це зауваження не підтверджене правилами.",
+      "fix": "Перейменувати клас без причини."
+    }
+  ]
+}

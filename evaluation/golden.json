@@ -1,0 +1,118 @@
+{
+  "kind": "synthetic-reviewer-golden-set",
+  "version": 2,
+  "notice": "Навчальні синтетичні артефакти. Це не кейси Notion і не фактичні запуски QAuto.",
+  "cases": [
+    {
+      "id": "REV-01",
+      "title": "Чистий контрольний приклад",
+      "fixture": "evaluation/cases/REV-01",
+      "verdict": "VALID",
+      "findings": []
+    },
+    {
+      "id": "REV-02",
+      "title": "XPath замість підтвердженого семантичного локатора",
+      "fixture": "evaluation/cases/REV-02",
+      "verdict": "CHANGES REQUESTED",
+      "findings": [
+        {
+          "id": "LOCATOR_XPATH",
+          "file": "pages/home.page.ts",
+          "anchor": "this.guestButton = page.locator('//button[text()=\"Guest log in\"]');",
+          "rule": "docs/page-object-locators.md: не використовувати XPath; є підтверджений getByRole",
+          "impact": "локатор залежить від DOM/текстового вузла",
+          "fix": "використати підтверджений getByRole з точною назвою"
+        }
+      ]
+    },
+    {
+      "id": "REV-03",
+      "title": "Дії в конструкторі та assertion у Page Object",
+      "fixture": "evaluation/cases/REV-03",
+      "verdict": "CHANGES REQUESTED",
+      "findings": [
+        {
+          "id": "POM_CONSTRUCTOR_ACTION",
+          "file": "pages/home.page.ts",
+          "anchor": "void page.goto('/');",
+          "rule": "конструктор Page Object тільки створює локатори",
+          "impact": "створення об’єкта неявно запускає навігацію",
+          "fix": "винести навігацію в async open(): Promise<void>"
+        },
+        {
+          "id": "POM_HIDDEN_ASSERTION",
+          "file": "pages/home.page.ts",
+          "anchor": "await expect(this.notice).toBeVisible();",
+          "rule": "ключові assertions залишаються в spec",
+          "impact": "тест приховує перевірку очікуваного результату",
+          "fix": "відкрити locator і перевірити його в spec через await expect"
+        }
+      ]
+    },
+    {
+      "id": "REV-04",
+      "title": "Позиційний локатор приховує два збіги",
+      "fixture": "evaluation/cases/REV-04",
+      "verdict": "CHANGES REQUESTED",
+      "findings": [
+        {
+          "id": "LOCATOR_POSITIONAL",
+          "file": "pages/home.page.ts",
+          "anchor": "this.guestButton = page.getByRole('button', { name: 'Guest log in' }).first();",
+          "rule": "не усувати неоднозначність випадковим .first()",
+          "impact": "клік може потрапити на іншу кнопку",
+          "fix": "звузити до перевіреного контейнера й оновити CLI evidence"
+        }
+      ]
+    },
+    {
+      "id": "REV-05",
+      "title": "Пропущене очікування і fixed wait",
+      "fixture": "evaluation/cases/REV-05",
+      "verdict": "CHANGES REQUESTED",
+      "findings": [
+        {
+          "id": "MISSING_ASSERTION",
+          "file": "tests/main.spec.ts",
+          "anchor": "await expect(page).toHaveURL('/panel/garage');",
+          "rule": "кожен expected result кейса має assertion",
+          "impact": "повідомлення гостьової сесії не перевіряється",
+          "fix": "додати await expect(home.notice).toBeVisible() у spec"
+        },
+        {
+          "id": "FIXED_WAIT",
+          "file": "tests/main.spec.ts",
+          "anchor": "await page.waitForTimeout(1000);",
+          "rule": "fixed waits заборонені",
+          "impact": "тест стає повільним і нестабільним",
+          "fix": "прибрати затримку й покластися на web-first assertion"
+        }
+      ]
+    },
+    {
+      "id": "REV-06",
+      "title": "Неуспішний запуск і відсутній --retries=0",
+      "fixture": "evaluation/cases/REV-06",
+      "verdict": "CHANGES REQUESTED",
+      "findings": [
+        {
+          "id": "RUN_FAILED",
+          "file": "context.json",
+          "anchor": "\"exitCode\": 1,",
+          "rule": "VALID потребує фактичного успішного запуску поточного коду",
+          "impact": "поточний тест не підтверджено як успішний",
+          "fix": "діагностувати failure, виправити в погоджених межах і використати запуск 2/2"
+        },
+        {
+          "id": "RUN_RETRIES",
+          "file": "context.json",
+          "anchor": "\"command\": \"npx playwright test tests/main.spec.ts --project=chromium\",",
+          "rule": "кожен запуск має --retries=0",
+          "impact": "config може додати приховану спробу",
+          "fix": "наступний дозволений запуск виконати з --retries=0"
+        }
+      ]
+    }
+  ]
+}

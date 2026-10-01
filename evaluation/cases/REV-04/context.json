@@ -1,0 +1,7 @@
+{
+  "caseId": "DEMO-MP-004",
+  "source": "LOCAL-REQ-004: натиснути кнопку Guest log in у навігації та побачити /panel/garage.",
+  "locatorEvidence": { "expression": "page.getByRole('button', { name: 'Guest log in' })", "matches": 2, "element": "одна кнопка в banner, друга в dialog; потрібна кнопка в banner" },
+  "approvedFiles": ["pages/home.page.ts", "tests/main.spec.ts"],
+  "run": { "number": 1, "command": "npx playwright test tests/main.spec.ts --project=chromium --retries=0", "exitCode": 0, "output": "[SIMULATED] 1 passed" }
+}

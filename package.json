@@ -3,6 +3,8 @@
   "private": true,
   "scripts": {
     "preflight": "node scripts/preflight.mjs",
+    "eval": "node evaluation/run.mjs",
+    "eval:check": "node --test evaluation/score.test.mjs",
     "test": "playwright test",
     "test:headed": "playwright test --headed",
     "test:ui": "playwright test --ui",

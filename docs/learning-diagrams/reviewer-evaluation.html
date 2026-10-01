@@ -1,0 +1,327 @@
+<!doctype html>
+<html lang="uk">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Як перевіряється робота Reviewer</title>
+  <style>
+    :root {
+      color-scheme: dark;
+      --bg: #081225;
+      --surface: #14233d;
+      --surface-active: #1b3553;
+      --text: #f3f7ff;
+      --muted: #b8c8e0;
+      --line: #435a79;
+      --cyan: #5de1e6;
+      --yellow: #ffcd6b;
+      --green: #79e0ae;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      min-height: 100vh;
+      background: radial-gradient(circle at 50% -20%, #1b3c64 0, var(--bg) 60%);
+      color: var(--text);
+      font: 16px/1.45 system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
+    button { font: inherit; }
+    .presentation { max-width: 1320px; margin: auto; padding: clamp(20px, 4vw, 54px); }
+    header { display: flex; align-items: end; justify-content: space-between; gap: 24px; margin-bottom: 24px; }
+    .eyebrow { margin: 0 0 8px; color: var(--cyan); font-size: .82rem; font-weight: 700; letter-spacing: .14em; text-transform: uppercase; }
+    h1 { margin: 0; font-size: clamp(2rem, 4vw, 3.7rem); line-height: 1.08; letter-spacing: -.04em; }
+    .subtitle { margin: 13px 0 0; color: var(--muted); font-size: clamp(1rem, 1.5vw, 1.25rem); }
+    .step-counter { flex: none; color: var(--yellow); font-size: 1.1rem; font-variant-numeric: tabular-nums; white-space: nowrap; }
+    .diagram {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) 42px minmax(0, 1fr) 42px minmax(0, 1fr);
+      grid-template-rows: auto 40px auto;
+      align-items: stretch;
+      gap: 0;
+    }
+    .node {
+      position: relative;
+      min-width: 0;
+      min-height: 172px;
+      padding: 20px 21px;
+      border: 1px solid var(--line);
+      border-radius: 20px;
+      background: var(--surface);
+      opacity: .55;
+      transition: opacity .45s ease, transform .45s ease, background .45s ease, border-color .45s ease, box-shadow .45s ease;
+    }
+    .node.done { opacity: .86; }
+    .node.active {
+      z-index: 1;
+      opacity: 1;
+      transform: translateY(-4px);
+      background: var(--surface-active);
+      border-color: var(--cyan);
+      box-shadow: 0 0 0 2px #5de1e626, 0 16px 36px #0005;
+    }
+    .node.active::after {
+      content: "";
+      position: absolute;
+      top: 17px;
+      right: 17px;
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      background: var(--cyan);
+      box-shadow: 0 0 0 0 #5de1e670;
+      animation: pulse 2s infinite;
+    }
+    @keyframes pulse { 70% { box-shadow: 0 0 0 11px #5de1e600; } 100% { box-shadow: 0 0 0 0 #5de1e600; } }
+    .number { display: inline-block; margin-bottom: 10px; color: var(--yellow); font-weight: 800; letter-spacing: .07em; }
+    .node h2 { margin: 0 0 9px; font-size: clamp(1.08rem, 1.7vw, 1.42rem); line-height: 1.2; }
+    .node p { margin: 0; color: var(--muted); }
+    .node code, .detail code, .support code { color: var(--cyan); font: .94em ui-monospace, SFMono-Regular, Consolas, monospace; overflow-wrap: anywhere; }
+    .arrow { align-self: center; justify-self: center; color: var(--line); font-size: 2.2rem; line-height: 1; transition: color .45s ease, transform .45s ease; }
+    .arrow.lit { color: var(--cyan); transform: scale(1.18); }
+    .n1 { grid-column: 1; grid-row: 1; }
+    .a12 { grid-column: 2; grid-row: 1; }
+    .n2 { grid-column: 3; grid-row: 1; }
+    .a23 { grid-column: 4; grid-row: 1; }
+    .n3 { grid-column: 5; grid-row: 1; }
+    .a34 { grid-column: 5; grid-row: 2; }
+    .n4 { grid-column: 5; grid-row: 3; }
+    .a45 { grid-column: 4; grid-row: 3; }
+    .n5 { grid-column: 3; grid-row: 3; }
+    .a56 { grid-column: 2; grid-row: 3; }
+    .n6 { grid-column: 1; grid-row: 3; }
+    .detail {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) auto;
+      gap: 24px;
+      align-items: center;
+      min-height: 136px;
+      margin-top: 25px;
+      padding: 22px 24px;
+      border-left: 4px solid var(--cyan);
+      border-radius: 0 16px 16px 0;
+      background: #10233a;
+    }
+    .detail .label { margin: 0 0 4px; color: var(--yellow); font-size: .8rem; font-weight: 700; letter-spacing: .1em; text-transform: uppercase; }
+    .detail h3 { margin: 0 0 6px; font-size: clamp(1.12rem, 1.9vw, 1.55rem); }
+    .detail p { margin: 0; color: var(--muted); font-size: clamp(.98rem, 1.4vw, 1.12rem); }
+    .detail .command { max-width: 460px; padding: 11px 14px; border-radius: 10px; background: #08172b; color: var(--cyan); font: .9rem/1.4 ui-monospace, SFMono-Regular, Consolas, monospace; overflow-wrap: anywhere; }
+    .controls { display: flex; flex-wrap: wrap; align-items: center; gap: 12px; margin-top: 20px; }
+    .controls button {
+      min-height: 44px;
+      padding: 9px 16px;
+      border: 1px solid #7189a6;
+      border-radius: 10px;
+      background: #18304d;
+      color: var(--text);
+      cursor: pointer;
+    }
+    .controls button:hover { background: #294665; }
+    .controls button:focus-visible { outline: 3px solid var(--yellow); outline-offset: 3px; }
+    .controls button.primary { border-color: var(--cyan); background: #145965; }
+    .progress { flex: 1; min-width: 110px; height: 7px; margin-left: 8px; border-radius: 99px; background: #29415e; overflow: hidden; }
+    .progress-fill { height: 100%; width: 16.666%; background: var(--cyan); transition: width .45s ease; }
+    .support { display: flex; flex-wrap: wrap; gap: 10px 28px; margin-top: 20px; color: var(--muted); font-size: .91rem; }
+    .support strong { color: var(--text); }
+    .note { margin-top: 16px; color: var(--yellow); font-size: .95rem; }
+    @media (max-width: 800px) {
+      header { align-items: start; }
+      .diagram { display: flex; flex-direction: column; }
+      .node { min-height: 0; padding: 15px 18px; }
+      .node.active { transform: translateX(4px); }
+      .arrow { margin: 3px 0; font-size: 1.5rem; transform: rotate(90deg); }
+      .arrow.lit { transform: rotate(90deg) scale(1.15); }
+      .a34 { transform: none; }
+      .a34.lit { transform: scale(1.15); }
+      .a45, .a56 { transform: rotate(-90deg); }
+      .a45.lit, .a56.lit { transform: rotate(-90deg) scale(1.15); }
+      .n1 { order: 1; } .a12 { order: 2; } .n2 { order: 3; } .a23 { order: 4; }
+      .n3 { order: 5; } .a34 { order: 6; } .n4 { order: 7; } .a45 { order: 8; }
+      .n5 { order: 9; } .a56 { order: 10; } .n6 { order: 11; }
+      .detail { grid-template-columns: 1fr; min-height: 0; gap: 12px; }
+      .detail .command { max-width: none; }
+    }
+    @media (max-width: 500px) {
+      header { display: block; }
+      .step-counter { margin-top: 14px; }
+      .controls button { flex: 1; }
+      .progress { flex-basis: 100%; margin-left: 0; }
+    }
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after { animation-duration: .01ms !important; transition-duration: .01ms !important; }
+    }
+  </style>
+</head>
+<body>
+  <main class="presentation">
+    <header>
+      <div>
+        <p class="eyebrow">Навчальна схема · evaluation/</p>
+        <h1>Як перевіряється робота Reviewer</h1>
+        <p class="subtitle">Шість кроків: від матеріалів сценарію до звіту з балами</p>
+      </div>
+      <div class="step-counter" id="step-counter" aria-live="polite">Крок 1 / 6</div>
+    </header>
+
+    <section class="diagram" aria-label="Послідовність перевірки Reviewer">
+      <article class="node n1 active" data-step="0">
+        <span class="number">01 · ЗАВДАННЯ</span>
+        <h2><code>cases/REV-04/</code></h2>
+        <p><code>context.json</code><br><code>pages/home.page.ts</code><br><code>tests/main.spec.ts</code></p>
+      </article>
+      <span class="arrow a12" data-after="0" aria-hidden="true">→</span>
+      <article class="node n2" data-step="1">
+        <span class="number">02 · АНАЛІЗ</span>
+        <h2>Reviewer читає</h2>
+        <p>Вимогу, код, evidence та відкритий словник <code>rules.json</code></p>
+      </article>
+      <span class="arrow a23" data-after="1" aria-hidden="true">→</span>
+      <article class="node n3" data-step="2">
+        <span class="number">03 · ВИСНОВОК</span>
+        <h2>Файл відповіді</h2>
+        <p><code>generated/reviewer-rev04.json</code><br>Вердикт і конкретні findings</p>
+      </article>
+      <span class="arrow a34" data-after="2" aria-hidden="true">↓</span>
+      <article class="node n4" data-step="3">
+        <span class="number">04 · КОМАНДА</span>
+        <h2><code>run.mjs</code></h2>
+        <p><code>npm run eval</code> читає відповідь, передану через <code>--submission</code></p>
+      </article>
+      <span class="arrow a45" data-after="3" aria-hidden="true">←</span>
+      <article class="node n5" data-step="4">
+        <span class="number">05 · ЗВІРКА</span>
+        <h2><code>score.mjs</code> + <code>golden.json</code></h2>
+        <p>ID проблем, файл і рядок, пояснення та вердикт</p>
+      </article>
+      <span class="arrow a56" data-after="4" aria-hidden="true">←</span>
+      <article class="node n6" data-step="5">
+        <span class="number">06 · РЕЗУЛЬТАТ</span>
+        <h2>Звіт Reviewer</h2>
+        <p>Бал зі 100, пропуски, зайві findings і неточні місця</p>
+      </article>
+    </section>
+
+    <section class="detail" aria-live="polite" aria-atomic="true">
+      <div>
+        <p class="label" id="detail-label">Крок 1 · Матеріали</p>
+        <h3 id="detail-title">З чого починається перевірка</h3>
+        <p id="detail-text">Папка сценарію містить вимогу, докази та два файли коду. Поле <code>fixture</code> в еталоні вказує саме на цю папку.</p>
+      </div>
+      <div class="command" id="detail-example">evaluation/cases/REV-04/</div>
+    </section>
+
+    <nav class="controls" aria-label="Керування схемою">
+      <button type="button" id="previous" aria-label="Попередній крок">← Назад</button>
+      <button type="button" id="play" class="primary" aria-label="Зупинити автоматичний показ">⏸ Пауза</button>
+      <button type="button" id="next" aria-label="Наступний крок">Далі →</button>
+      <div class="progress" role="progressbar" aria-label="Прогрес показу" aria-valuemin="1" aria-valuemax="6" aria-valuenow="1" id="progress">
+        <div class="progress-fill" id="progress-fill"></div>
+      </div>
+    </nav>
+
+    <div class="support">
+      <span><strong><code>examples/</code></strong> — зразки відповідей для демонстрації</span>
+      <span><strong><code>score.test.mjs</code></strong> — тести самого оцінювача (<code>npm run eval:check</code>)</span>
+    </div>
+    <p class="note">Це синтетична вправа: оцінювач не запускає Playwright і не перевіряє зміст пояснень замість людини.</p>
+  </main>
+
+  <script>
+    const steps = [
+      {
+        label: 'Крок 1 · Матеріали',
+        title: 'З чого починається перевірка',
+        text: 'Папка сценарію містить вимогу, докази та два файли коду. Поле fixture в еталоні вказує саме на цю папку.',
+        example: 'evaluation/cases/REV-04/'
+      },
+      {
+        label: 'Крок 2 · Аналіз',
+        title: 'Reviewer сам шукає проблеми',
+        text: 'Він читає context.json, Page Object і тест. rules.json дає можливі ID проблем, але не підказує відповідь для цього сценарію.',
+        example: 'cases/REV-04/ + rules.json + docs/'
+      },
+      {
+        label: 'Крок 3 · Висновок',
+        title: 'Reviewer записує власну відповідь',
+        text: 'У JSON потрібні scenarioId, verdict і findings. Кожне зауваження містить ID, файл, рядок, проблему, наслідок і виправлення.',
+        example: 'generated/reviewer-rev04.json'
+      },
+      {
+        label: 'Крок 4 · Запуск',
+        title: 'Команда читає готовий JSON',
+        text: 'Параметр --submission має вказувати на файл, який уже існує. npm run eval не створює відповідь Reviewer.',
+        example: 'npm run eval -- --submission generated/reviewer-rev04.json'
+      },
+      {
+        label: 'Крок 5 · Звірка',
+        title: 'Оцінювач порівнює з еталоном',
+        text: 'score.mjs читає golden.json і звіряє ID, місце зауважень, заповненість пояснень та вердикт. Reviewer бачить еталон лише після вправи.',
+        example: 'score.mjs ⇄ golden.json'
+      },
+      {
+        label: 'Крок 6 · Результат',
+        title: 'Показуємо відповідь і звіт разом',
+        text: 'Для прикладу: correct.json отримав 100/100, broken.json — 35/100. Низький бал не є помилкою запуску; зміст пояснень переглядає людина.',
+        example: 'Reviewer: 100/100  ·  або  ·  Reviewer: 35/100'
+      }
+    ];
+    const nodes = [...document.querySelectorAll('.node')];
+    const arrows = [...document.querySelectorAll('.arrow')];
+    const counter = document.getElementById('step-counter');
+    const label = document.getElementById('detail-label');
+    const title = document.getElementById('detail-title');
+    const description = document.getElementById('detail-text');
+    const example = document.getElementById('detail-example');
+    const progress = document.getElementById('progress');
+    const fill = document.getElementById('progress-fill');
+    const playButton = document.getElementById('play');
+    const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    let step = 0;
+    let playing = !prefersReducedMotion;
+    let timer;
+
+    function render() {
+      nodes.forEach((node, index) => {
+        node.classList.toggle('active', index === step);
+        node.classList.toggle('done', index < step);
+      });
+      arrows.forEach(arrow => arrow.classList.toggle('lit', Number(arrow.dataset.after) < step));
+      const data = steps[step];
+      counter.textContent = `Крок ${step + 1} / ${steps.length}`;
+      label.textContent = data.label;
+      title.textContent = data.title;
+      description.textContent = data.text;
+      example.textContent = data.example;
+      fill.style.width = `${((step + 1) / steps.length) * 100}%`;
+      progress.setAttribute('aria-valuenow', String(step + 1));
+      playButton.textContent = playing ? '⏸ Пауза' : '▶ Показати';
+      playButton.setAttribute('aria-label', playing ? 'Зупинити автоматичний показ' : 'Продовжити автоматичний показ');
+    }
+
+    function setStep(nextStep) {
+      step = (nextStep + steps.length) % steps.length;
+      render();
+    }
+
+    function schedule() {
+      clearInterval(timer);
+      if (playing) timer = setInterval(() => setStep(step + 1), 5200);
+    }
+
+    document.getElementById('previous').addEventListener('click', () => { setStep(step - 1); schedule(); });
+    document.getElementById('next').addEventListener('click', () => { setStep(step + 1); schedule(); });
+    playButton.addEventListener('click', () => { playing = !playing; render(); schedule(); });
+    document.addEventListener('keydown', event => {
+      if (event.key === 'ArrowRight') { setStep(step + 1); schedule(); }
+      if (event.key === 'ArrowLeft') { setStep(step - 1); schedule(); }
+      if (event.code === 'Space' && event.target === document.body) {
+        event.preventDefault();
+        playing = !playing;
+        render();
+        schedule();
+      }
+    });
+    render();
+    schedule();
+  </script>
+</body>
+</html>

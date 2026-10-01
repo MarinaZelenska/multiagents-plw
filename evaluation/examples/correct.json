@@ -1,0 +1,22 @@
+{
+  "scenarioId": "REV-03",
+  "verdict": "CHANGES REQUESTED",
+  "findings": [
+    {
+      "id": "POM_CONSTRUCTOR_ACTION",
+      "file": "pages/home.page.ts",
+      "line": 10,
+      "problem": "Конструктор Page Object запускає навігацію.",
+      "impact": "Створення об’єкта неочікувано змінює сторінку і не чекає завершення навігації.",
+      "fix": "Винести page.goto('/') в окремий async open(): Promise<void> і викликати його в тесті."
+    },
+    {
+      "id": "POM_HIDDEN_ASSERTION",
+      "file": "pages/home.page.ts",
+      "line": 15,
+      "problem": "Ключовий assertion захований у методі Page Object.",
+      "impact": "Зі spec не видно, що перевіряється повідомлення гостьової сесії.",
+      "fix": "Залишити методові лише дію, а await expect(home.notice).toBeVisible() розмістити в spec."
+    }
+  ]
+}
